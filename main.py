@@ -36,7 +36,7 @@ if __name__ == '__main__':
             help='search query')
     args = parser.parse_args()
 
-    # validate download directory
+    # check download directory
     if args.d:
         path = Path(args.d)
         if path.is_dir():
@@ -46,7 +46,7 @@ if __name__ == '__main__':
             print('error: invalid directory')
             exit(0)
 
-    # validate BibTex file
+    # check BibTex file
     if args.x:
         path = Path(args.x)
         if not path.is_file():
@@ -54,6 +54,15 @@ if __name__ == '__main__':
             exit(0)
         else:
             bib_path = args.x
+
+    # check if file type filter on sci
+    if args.g == 'sci' and args.t:
+        print('error: cannot filter scientific articles by file type')
+        exit(0)
+    # check if ISBN filter on sci
+    if args.g == 'sci' and args.i:
+        print('error: cannto filter scientific articles by ISBN')
+        exit(0)
 
     # set initial search url by genre
     if args.g == 'non':
@@ -66,26 +75,29 @@ if __name__ == '__main__':
     # append query to search url
     for word in args.query:
         url += word + '+'
+    url = url[:-1]
 
     # complete search url, get books
     if args.g == 'non':
-        url = url[:-1] + '&res=100'
+        url += '&res=100'
         books = populate.non(url)
     elif args.g == 'fic':
-        url = url[:-1] + '&page=1'
+        # filter fic books by file type via url
+        url += '&format=' + args.t if args.t else ''
+        url += '&page=1'
         books = populate.fic(url)
     elif args.g == 'sci':
-        url = url[:-1] + '&page=1'
+        url += '&page=1'
         books = populate.sci(url)
 
-    # filter books by file type
-    if args.t:
+    # filter non books by file type
+    if args.g == 'non' and args.t:
         foo = []
         for book in books:
             foo.append(book) if book.ext == args.t else None
         books = foo
 
-    # filter books by ISBN
+    # filter non/fic by ISBN
     if args.i:
         foo = []
         for book in books:
@@ -120,12 +132,12 @@ if __name__ == '__main__':
 
         break
 
-    url = books[sel_num].url # book url
+    book_url = books[sel_num].url
 
     # download book
     if args.g == 'non':
-        download.non(url, bib_path, dl_path)
+        download.non(book_url, bib_path, dl_path)
     elif args.g == 'fic':
-        download.fic(url, dl_path)
+        download.fic(book_url, dl_path)
     elif args.g == 'sci':
-        download.sci(url, bib_path, dl_path)
+        download.sci(book_url, bib_path, dl_path)
