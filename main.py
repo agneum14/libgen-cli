@@ -13,7 +13,7 @@ if __name__ == '__main__':
             Genesis')
     parser.add_argument('-g',
             choices=['fic', 'non'],
-            default='fic',
+            default='non',
             help='search fiction or non-fiction books')
     parser.add_argument('-d',
             metavar='DIR',
@@ -21,7 +21,11 @@ if __name__ == '__main__':
             help='save book to directory')
     parser.add_argument('-t',
             choices=['epub', 'mobi', 'azw', 'azw3', 'fb2', 'pdf', 'rtf', 'txt'],
-            help='file type')
+            help='filter by file type')
+    parser.add_argument('-i',
+            metavar = 'ISBN',
+            type=str,
+            help='filter by ISBN')
     parser.add_argument('-x',
             metavar='PATH',
             type=str,
@@ -64,11 +68,18 @@ if __name__ == '__main__':
         url = url[:-1] + '&page=1'
         books = populate.fic(url)
 
-    # filter books by filetype
+    # filter books by file type
     if args.t:
         foo = []
         for book in books:
             foo.append(book) if book.ext == args.t else None
+        books = foo
+
+    # filter books by ISBN
+    if args.i:
+        foo = []
+        for book in books:
+            foo.append(book) if args.i in book.isbn else None
         books = foo
 
     if len(books) == 0:
