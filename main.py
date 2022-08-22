@@ -12,7 +12,7 @@ if __name__ == '__main__':
     description='download books from Library \
             Genesis')
     parser.add_argument('-g',
-            choices=['fic', 'non'],
+            choices=['fic', 'non', 'sci'],
             default='non',
             help='search fiction or non-fiction books')
     parser.add_argument('-d',
@@ -55,8 +55,10 @@ if __name__ == '__main__':
 
     if args.g == 'non':
         url = 'https://libgen.is/search.php?req='
-    else:
+    elif args.g == 'fic':
         url = 'https://libgen.is/fiction/?q='
+    elif args.g == 'sci':
+        url = 'https://libgen.is/scimag/?q='
 
     for word in args.query:
         url += word + '+'
@@ -64,9 +66,12 @@ if __name__ == '__main__':
     if args.g == 'non':
         url = url[:-1] + '&res=100'
         books = populate.non(url)
-    else:
+    elif args.g == 'fic':
         url = url[:-1] + '&page=1'
         books = populate.fic(url)
+    else:
+        url = url[:-1] + '&page=1'
+        books = populate.sci(url)
 
     # filter books by file type
     if args.t:
@@ -86,14 +91,15 @@ if __name__ == '__main__':
         print('no books found.')
         exit(0)
 
-    for i, book in enumerate(books):
-        print(i, '(BOOK #)')
-        book.print()
     if args.t:
         foo = []
         for book in books:
             foo.append(book) if book.ext == args.t else None
         books = foo
+
+    for i, book in enumerate(books):
+        print(i, '(BOOK #)')
+        book.print()
         print()
 
     # book selection loop
@@ -116,5 +122,7 @@ if __name__ == '__main__':
     url = books[sel_num].url
     if args.g == 'non':
         download.non(url, bib_path, dl_path)
-    else:
+    elif args.g == 'fic':
         download.fic(url, dl_path)
+    elif args.g == 'sci':
+        download.sci(url, bib_path, dl_path)

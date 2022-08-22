@@ -7,16 +7,25 @@ import re
 
 get_soup = lambda url: BeautifulSoup(requests.get(url).text, 'html.parser')
 
-def bib(soup, bib_path):
-    url = 'http://libgen.is/book/' + soup.find('a', string='Link')['href']
+def bib(url, bib_path, genre):
     soup = get_soup(url)
-    soup = soup.find('textarea', {'id': 'bibtext'})
+    soup = soup.find('textarea') if genre == 'non' else soup
     text = soup.text.strip().replace('book:', '')
 
     print('appending BibTeX entry to: ' + bib_path)
     with open(bib_path, 'a') as f:
         f.write(text.replace('\r\n', os.linesep))
         f.write('\n')
+
+def sci(url, bib_path, path):
+    soup = get_soup(url)
+    url = soup.find('a', string='Libgen.rs')['href']
+
+    if bib_path:
+        bib_url = 'https://libgen.is' + soup.find('a', string='show')['href']
+        bib(bib_url, bib_path, 'sci')
+
+    dl(url, path)
 
 def fic(url, path):
     soup = get_soup(url)
@@ -28,7 +37,10 @@ def non(url, bib_path, path):
     soup = get_soup(url)
     url = soup.find('a', string='this mirror')['href']
 
-    bib(soup, bib_path) if bib_path else None
+    if (bib_path):
+        bib_url = 'https://libgen.is/book/' + soup.find('a', string='Link')['href']
+        bib(bib_url, bib_path, 'non')
+
     dl(url, path)
 
 def dl(url, path):
