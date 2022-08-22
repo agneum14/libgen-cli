@@ -14,7 +14,10 @@ if __name__ == '__main__':
     parser.add_argument('-g',
             choices=['fic', 'non', 'sci'],
             default='non',
-            help='search fiction or non-fiction books')
+            help='search fiction or non-fiction books, or scientific articles (default: non)')
+    parser.add_argument('-s',
+            choices=['auth', 'ser', 'pub'],
+            help='set search by author, series or publisher (default: LibGen default search)')
     parser.add_argument('-d',
             metavar='DIR',
             type=str,
@@ -55,13 +58,22 @@ if __name__ == '__main__':
         else:
             bib_path = args.x
 
-    # check if file type filter on sci
+    # check file type filter on sci
     if args.g == 'sci' and args.t:
         print('error: cannot filter scientific articles by file type')
         exit(0)
-    # check if ISBN filter on sci
+    # check ISBN filter on sci
     if args.g == 'sci' and args.i:
-        print('error: cannto filter scientific articles by ISBN')
+        print('error: cannot filter scientific articles by ISBN')
+        exit(0)
+    # check search type for sci
+    if args.g == 'sci' and args.s:
+        print('error: cannot set search type for scientific articles')
+        exit(0)
+
+    # check if publisher search for fic
+    if args.g == 'fic' and args.s == 'pub':
+        print('error: cannot set publisher search for fiction books')
         exit(0)
 
     # set initial search url by genre
@@ -76,6 +88,16 @@ if __name__ == '__main__':
     for word in args.query:
         url += word + '+'
     url = url[:-1]
+
+    # append search type to search url
+    if args.g == 'non' and args.s:
+        url += '&column='
+        url += 'author' if args.s == 'auth' else ''
+        url += 'publisher' if args.s == 'pub' else ''
+    if args.g == 'fic' and args.s:
+        url += '&criteria='
+        url += 'authors' if args.s == 'auth' else ''
+    url += 'series' if args.s == 'ser' else ''
 
     # complete search url, get books
     if args.g == 'non':
