@@ -119,7 +119,3 @@ def non(url):
         i += 1
 
     return books
-
-if __name__ == '__main__':
-    url = 'https://libgen.is/fiction/?q=adventurers&page=1'
-    fic(url)
