@@ -33,11 +33,17 @@ class Book:
 get_soup = lambda url: BeautifulSoup(requests.get(url).text, 'html.parser')
 parse_basic = lambda soup: soup.text.strip()
 
+page = 1
 def fic(url):
+    global books
     soup = get_soup(url)
+
+    if soup.find('p', string='No files were found.'):
+        return books
+
     table = soup.find('table', {'class': 'catalog'})
 
-    i = 0
+    i = len(books)
     for row in table.find_all('tr')[1:]:
         books.append(Book())
         j = 0
@@ -50,8 +56,8 @@ def fic(url):
                 title_soup = col.find('a')
                 books[i].title = parse_basic(title_soup)
 
-                url = 'https://libgen.is' + title_soup['href']
-                books[i].url = url
+                book_url = 'https://libgen.is' + title_soup['href']
+                books[i].url = book_url
 
                 reg = re.compile('^ISBN')
                 isbn_soup = col.find('p', string=reg)
@@ -67,7 +73,10 @@ def fic(url):
 
         i += 1
 
-    return books
+    global page
+    page += 1
+    url = url[:-1] + str(page)
+    return fic(url)
 
 def non(url):
     soup = get_soup(url)
@@ -112,12 +121,5 @@ def non(url):
     return books
 
 if __name__ == '__main__':
-    # url = 'https://libgen.is/fiction/?q=adventurers+wanted'
-    # fic(url)
-    url = 'http://libgen.is/search.php?req=lewis+vaughn&lg_topic=libgen&open=0&view=simple&res=25&phrase=1&column=def'
-    non(url)
-
-    for i, book in enumerate(books):
-        print(i, '(BOOK #)')
-        book.print()
-        print()
+    url = 'https://libgen.is/fiction/?q=adventurers&page=1'
+    fic(url)

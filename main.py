@@ -5,6 +5,7 @@ import populate
 
 bib_path = None
 dl_path = None
+books = []
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='libgencli',
@@ -51,8 +52,7 @@ if __name__ == '__main__':
     if args.g == 'non':
         url = 'https://libgen.is/search.php?req='
     else:
-        # build fiction url
-        pass
+        url = 'https://libgen.is/fiction/?q='
 
     for word in args.query:
         url += word + '+'
@@ -61,8 +61,8 @@ if __name__ == '__main__':
         url = url[:-1] + '&res=100'
         books = populate.non(url)
     else:
-        pass
-        # build fiction books
+        url = url[:-1] + '&page=1'
+        books = populate.fic(url)
 
     # filter books by filetype
     if args.t:
@@ -78,6 +78,11 @@ if __name__ == '__main__':
     for i, book in enumerate(books):
         print(i, '(BOOK #)')
         book.print()
+    if args.t:
+        foo = []
+        for book in books:
+            foo.append(book) if book.ext == args.t else None
+        books = foo
         print()
 
     # book selection loop
@@ -101,5 +106,4 @@ if __name__ == '__main__':
     if args.g == 'non':
         download.non(url, bib_path, dl_path)
     else:
-        pass
-        # fiction download
+        download.fic(url, dl_path)
