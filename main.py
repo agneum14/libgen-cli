@@ -36,6 +36,7 @@ if __name__ == '__main__':
             help='search query')
     args = parser.parse_args()
 
+    # validate download directory
     if args.d:
         path = Path(args.d)
         if path.is_dir():
@@ -45,6 +46,7 @@ if __name__ == '__main__':
             print('error: invalid directory')
             exit(0)
 
+    # validate BibTex file
     if args.x:
         path = Path(args.x)
         if not path.is_file():
@@ -53,6 +55,7 @@ if __name__ == '__main__':
         else:
             bib_path = args.x
 
+    # set initial search url by genre
     if args.g == 'non':
         url = 'https://libgen.is/search.php?req='
     elif args.g == 'fic':
@@ -60,16 +63,18 @@ if __name__ == '__main__':
     elif args.g == 'sci':
         url = 'https://libgen.is/scimag/?q='
 
+    # append query to search url
     for word in args.query:
         url += word + '+'
 
+    # complete search url, get books
     if args.g == 'non':
         url = url[:-1] + '&res=100'
         books = populate.non(url)
     elif args.g == 'fic':
         url = url[:-1] + '&page=1'
         books = populate.fic(url)
-    else:
+    elif args.g == 'sci':
         url = url[:-1] + '&page=1'
         books = populate.sci(url)
 
@@ -87,22 +92,18 @@ if __name__ == '__main__':
             foo.append(book) if args.i in book.isbn else None
         books = foo
 
+    # exit if no books
     if len(books) == 0:
         print('no books found.')
         exit(0)
 
-    if args.t:
-        foo = []
-        for book in books:
-            foo.append(book) if book.ext == args.t else None
-        books = foo
-
+    # display books
     for i, book in enumerate(books):
         print(i, '(BOOK #)')
         book.print()
         print()
 
-    # book selection loop
+    # loop book selection
     while True:
         sel = input('enter BOOK # (-1 terminates): ')
         if sel == '-1':
@@ -119,7 +120,9 @@ if __name__ == '__main__':
 
         break
 
-    url = books[sel_num].url
+    url = books[sel_num].url # book url
+
+    # download book
     if args.g == 'non':
         download.non(url, bib_path, dl_path)
     elif args.g == 'fic':
