@@ -154,6 +154,7 @@ def non(url):
             elif (j == 2):
                 r = re.compile('^\d{9,}')
                 isbn_soup = col.find('i', string=r)
+                isbn = ""
                 if (isbn_soup):
                     isbn = parse_basic(isbn_soup)
                     books[i].isbn = isbn
@@ -165,7 +166,7 @@ def non(url):
 
                 r = re.compile('^book')
                 title_soup = col.find('a', href=r)
-                books[i].title = parse_basic(title_soup).replace(isbn, '')
+                books[i].title = parse_basic(title_soup).replace(isbn, "")
 
                 url = 'https://libgen.is/' + title_soup['href']
                 books[i].url = url
